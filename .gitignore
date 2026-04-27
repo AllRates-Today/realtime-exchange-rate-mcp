@@ -1,0 +1,10 @@
+node_modules
+dist
+*.log
+.env
+.env.local
+.DS_Store
+mcp-publisher
+
+# Internal / marketing drafts — not for public repo
+CURSOR-DIRECTORY-UPDATE.md
