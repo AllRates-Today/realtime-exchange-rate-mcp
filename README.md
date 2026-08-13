@@ -1,17 +1,16 @@
-# Realtime Exchange Rate MCP Server
+# Realtime Exchange Rate MCP Server — @allratestoday/mcp-server
+
+A Model Context Protocol server that lets Claude Code, Cursor, Claude Desktop, Windsurf, and any other MCP-compatible client fetch real-time currency rates, historical series, and multi-currency lookups from the [AllRatesToday](https://allratestoday.com) API. Rates come from institutional interbank market data.
 
 [![Powered by AllRatesToday](https://img.shields.io/badge/Powered%20by-AllRatesToday-orange.svg)](https://allratestoday.com)
-
-[![npm version](https://img.shields.io/npm/v/@allratestoday/mcp-server.svg?style=flat-square)](https://www.npmjs.com/package/@allratestoday/mcp-server)
-[![npm downloads](https://img.shields.io/npm/dm/@allratestoday/mcp-server.svg?style=flat-square)](https://www.npmjs.com/package/@allratestoday/mcp-server)
-[![License](https://img.shields.io/badge/license-MIT-green.svg?style=flat-square)](./LICENSE)
-[![MCP](https://img.shields.io/badge/Model%20Context%20Protocol-1.x-blue.svg?style=flat-square)](https://modelcontextprotocol.io)
+[![npm version](https://img.shields.io/npm/v/@allratestoday/mcp-server.svg)](https://www.npmjs.com/package/@allratestoday/mcp-server)
+[![npm downloads](https://img.shields.io/npm/dm/@allratestoday/mcp-server.svg)](https://www.npmjs.com/package/@allratestoday/mcp-server)
+[![CI](https://github.com/cahthuranag/realtime-exchange-rate-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/cahthuranag/realtime-exchange-rate-mcp/actions/workflows/ci.yml)
+[![MCP](https://img.shields.io/badge/Model%20Context%20Protocol-1.x-blue.svg)](https://modelcontextprotocol.io)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6.svg)](https://www.typescriptlang.org/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 
 English | [简体中文](./README-zh-CN.md)
-
-> Give your AI coding assistant a live window into the foreign-exchange market.
-
-A Model Context Protocol server that lets **Claude Code**, **Cursor**, **Claude Desktop**, **Windsurf**, and any other MCP-compatible client fetch real-time currency rates, historical data, and multi-currency lookups.
 
 After installation, your assistant can answer questions like:
 
@@ -21,76 +20,47 @@ After installation, your assistant can answer questions like:
 - *"Compare USD against EUR, GBP, and JPY simultaneously."*
 - *"List every supported currency."*
 
----
+## 🚀 Features
 
-## Table of contents
+- 💱 **Live mid-market rates** — current rate for any supported ISO 4217 pair
+- 📈 **Historical series built in** — `1d` (hourly), `7d` (daily), `30d` (daily), `1y` (weekly)
+- 🧰 **Four focused tools** — `get_exchange_rate`, `get_historical_rates`, `get_rates_authenticated`, `list_currencies`; a small surface the model uses correctly
+- 🔌 **Works everywhere MCP does** — stdio transport, MCP SDK 1.x; Claude Code, Cursor, Claude Desktop, Windsurf, or any generic stdio host
+- 🛡️ **Fail-fast and honest** — refuses to start without an API key and relays upstream API errors verbatim instead of guessing
+- 🔒 **Nothing leaks** — only the request parameters and your API key ever reach allratestoday.com; never conversation context
+- 📦 **Two runtime dependencies** — `@modelcontextprotocol/sdk` and `zod`; Node.js ≥ 18
 
-- [What you get](#what-you-get)
-- [Get an API key (required)](#get-an-api-key-required)
-- [Install](#install)
-- [Quick setup per client](#quick-setup-per-client)
-  - [Claude Code](#claude-code)
-  - [Cursor](#cursor)
-  - [Claude Desktop](#claude-desktop)
-  - [Windsurf](#windsurf)
-  - [Generic stdio MCP client](#generic-stdio-mcp-client)
-- [Verify it works](#verify-it-works)
-- [Tools reference](#tools-reference)
-- [Environment variables](#environment-variables)
-- [Troubleshooting](#troubleshooting)
-- [Error reference](#error-reference)
-- [FAQ](#faq)
-- [Development](#development)
-- [Changelog](#changelog)
-- [Support](#support)
-- [License](#license)
+Everything these tools return is a **mid-market rate** — the interbank midpoint, the right number for price display and conversion. It is not the official rate a tax authority or auditor may require; for published central-bank and tax-authority rates, see the [AllRatesToday docs](https://allratestoday.com/docs).
 
----
+## 🔑 Get your API key
 
-## What you get
-
-| Capability | Detail |
-|---|---|
-| **Currencies** | 150+ ISO 4217 codes, all major and most exotics |
-| **Update frequency** | Mid-market rates refresh every ~60 seconds |
-| **Historical depth** | Up to 1 year via `1d` / `7d` / `30d` / `1y` granularity |
-| **Tools exposed** | 4 — `get_exchange_rate`, `get_historical_rates`, `get_rates_authenticated`, `list_currencies` |
-| **Transport** | stdio (subprocess), MCP 1.x compatible |
-| **Runtime** | Node.js ≥18 |
-
----
-
-## Get an API key (required)
-
-The server **will not start** without a valid `ALLRATES_API_KEY`. Rates are served by [AllRatesToday](https://allratestoday.com); a free key is enough for development and personal use.
+The server **will not start** without a valid `ALLRATES_API_KEY`, and all four tools require it. A free key is enough for development and personal use.
 
 1. Register at [allratestoday.com/register](https://allratestoday.com/register)
 2. Verify your email
 3. Copy your key from the dashboard (format: `art_live_xxxxx`)
 4. Use it as `ALLRATES_API_KEY` in the configs below
 
-If the key is missing, the server prints clear registration instructions on stderr and exits with code 1.
+If the key is missing, the server prints registration instructions on stderr and exits with code 1.
 
----
+## 📦 Installation
 
-## Install
-
-The server is published as an npm package. The simplest install is **zero-install via `npx`**, which is what every config below uses.
+The simplest install is **zero-install via `npx`**, which is what every config below uses:
 
 ```bash
 # Run without installing (recommended)
 npx -y @allratestoday/mcp-server
+```
 
+```bash
 # Or install globally
 npm install -g @allratestoday/mcp-server
 allratestoday-mcp
 ```
 
-Both commands launch the stdio MCP server and wait for a client to connect. They're not meant to be run directly from your shell — your MCP client launches them as a subprocess.
+Both commands launch the stdio MCP server and wait for a client to connect — they are not meant to be run interactively from your shell; your MCP client launches them as a subprocess.
 
----
-
-## Quick setup per client
+## 🏁 Quick start
 
 Each client reads MCP servers from a different config file. Pick yours below.
 
@@ -103,11 +73,11 @@ claude mcp add allratestoday -- npx -y @allratestoday/mcp-server
 claude mcp env allratestoday ALLRATES_API_KEY=art_live_xxxxx
 ```
 
-Restart Claude Code. Verify by asking it: *"What's the current USD to EUR rate?"*
+Restart Claude Code, then ask: *"What's the current USD to EUR rate?"*
 
 ### Cursor
 
-Edit `~/.cursor/mcp.json` (or `.cursor/mcp.json` inside your project for project-scoped servers):
+Edit `~/.cursor/mcp.json` (or `.cursor/mcp.json` inside your project for a project-scoped server):
 
 ```json
 {
@@ -153,111 +123,78 @@ Edit the config file (path depends on OS):
 
 ### Windsurf
 
-Edit `~/.codeium/windsurf/mcp_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "allratestoday": {
-      "command": "npx",
-      "args": ["-y", "@allratestoday/mcp-server"],
-      "env": {
-        "ALLRATES_API_KEY": "art_live_xxxxx"
-      }
-    }
-  }
-}
-```
-
-Restart Windsurf.
+Edit `~/.codeium/windsurf/mcp_config.json` with the same `mcpServers` block as above, then restart Windsurf.
 
 ### Generic stdio MCP client
 
 Any MCP host that supports stdio transport works. The launch command is:
 
-```
+```bash
 npx -y @allratestoday/mcp-server
 ```
 
-…with the environment variable `ALLRATES_API_KEY` set. The protocol version is MCP 1.x.
+…with `ALLRATES_API_KEY` set in the subprocess environment. The same block, ready to copy, also lives in [`.mcp.json`](./.mcp.json) in this repo; [`smithery.yaml`](./smithery.yaml) describes the same stdio launch for Smithery, and [`server.json`](./server.json) is the MCP registry manifest.
 
----
+### Verify it works
 
-## Verify it works
+1. **Server starts** — open the client. A red dot or "failed to connect" means the API key is missing or wrong (see [Troubleshooting](#-troubleshooting)).
+2. **Tools are listed** — most clients have a "tools" or "MCP" panel showing all four tools.
+3. **A live call returns a number** — ask *"What's the current USD to EUR rate?"* The assistant should call `get_exchange_rate(source: "USD", target: "EUR")` and reply with a real rate. If it produces a number without a tool call, the server is not connected.
 
-After configuring your client, test in this order:
+## 📚 API reference
 
-1. **Server starts** — open the client. If the MCP integration shows a red dot or "failed to connect", the API key is missing or wrong (see [Troubleshooting](#troubleshooting)).
+| Tool | Purpose | Required input |
+|---|---|---|
+| [`get_exchange_rate`](#get_exchange_rate) | Current rate for one pair | `source`, `target` |
+| [`get_historical_rates`](#get_historical_rates) | Time series over a preset period | `source`, `target` |
+| [`get_rates_authenticated`](#get_rates_authenticated) | Multiple targets in one call, optional point-in-time | `source`, `target` |
+| [`list_currencies`](#list_currencies) | All supported codes, names, symbols | — |
 
-2. **Tools are listed** — most clients have a "tools" or "MCP" panel. You should see:
-   - `get_exchange_rate`
-   - `get_historical_rates`
-   - `get_rates_authenticated`
-   - `list_currencies`
-
-3. **A live call returns a number** — ask the assistant:
-
-   > *What's the current USD to EUR rate?*
-
-   The assistant will call `get_exchange_rate(source: "USD", target: "EUR")` and reply with a real rate (e.g. `"USD to EUR is currently 0.9214."`). If it fabricates a number without making a tool call, the server isn't connected.
-
----
-
-## Tools reference
-
-All four tools require an API key.
+All four tools require `ALLRATES_API_KEY`, and every input schema sets `additionalProperties: false` — unknown fields are rejected.
 
 ### `get_exchange_rate`
 
-Current mid-market rate between two currencies.
-
-**Input**
+Current mid-market rate between two currencies. Calls `GET /rate`.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `source` | string | yes | 3-letter ISO 4217 code, e.g. `USD` |
-| `target` | string | yes | 3-letter ISO 4217 code, e.g. `EUR` |
-
-**Example call**
+| `source` | string (exactly 3 chars) | yes | ISO 4217 code, e.g. `USD` |
+| `target` | string (exactly 3 chars) | yes | ISO 4217 code, e.g. `EUR` |
 
 ```json
 { "source": "USD", "target": "EUR" }
 ```
 
-**Example response**
+Response shape — `rate` (number) and `source` (string, the upstream data source identifier):
 
 ```json
-{ "rate": 0.92145, "source": "wise" }
+{ "rate": 0.92145, "source": "..." }
 ```
 
 ### `get_historical_rates`
 
-Time-series data points for a currency pair over a fixed period.
-
-**Input**
+Time-series data points for a currency pair over a fixed period. Calls `GET /historical-rates`.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `source` | string | yes | Source currency code |
-| `target` | string | yes | Target currency code |
+| `source` | string (exactly 3 chars) | yes | Source currency code |
+| `target` | string (exactly 3 chars) | yes | Target currency code |
 | `period` | string | no (default `7d`) | One of `1d`, `7d`, `30d`, `1y` |
 
-**Granularity by period**
+Granularity per period:
 
-| `period` | Data points |
+| `period` | Granularity |
 |---|---|
-| `1d` | Hourly (24 points) |
-| `7d` | Daily (7 points) |
-| `30d` | Daily (30 points) |
-| `1y` | Weekly (52 points) |
-
-**Example call**
+| `1d` | Hourly |
+| `7d` | Daily |
+| `30d` | Daily |
+| `1y` | Weekly |
 
 ```json
 { "source": "USD", "target": "INR", "period": "30d" }
 ```
 
-**Example response (truncated)**
+Response (truncated):
 
 ```json
 {
@@ -274,24 +211,20 @@ Time-series data points for a currency pair over a fixed period.
 
 ### `get_rates_authenticated`
 
-Multiple targets in one call, with optional historical timestamp or grouping window.
-
-**Input**
+Multiple targets in one call, with an optional historical timestamp or grouping window. Calls `GET /v1/rates`.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `source` | string | yes | Source currency code |
+| `source` | string (exactly 3 chars) | yes | Source currency code |
 | `target` | string | yes | One or more codes, comma-separated (`EUR,GBP,JPY`) |
-| `time` | string (ISO 8601) | no | Historical point in time |
+| `time` | string (ISO 8601 date-time) | no | Historical point in time |
 | `group` | string | no | One of `hour`, `day`, `week`, `month` |
-
-**Example call**
 
 ```json
 { "source": "USD", "target": "EUR,GBP,JPY" }
 ```
 
-**Example response**
+Response — an array of `{ rate, source, target, time }`:
 
 ```json
 [
@@ -303,11 +236,11 @@ Multiple targets in one call, with optional historical timestamp or grouping win
 
 ### `list_currencies`
 
-All supported currencies with codes, names, and symbols. Cached upstream for 24 hours.
+All supported currencies with codes, names, and symbols. Calls `GET /v1/symbols`, cached 24 h upstream — cheap to call for validating user input before the other tools.
 
 **Input** — none.
 
-**Example response (truncated)**
+Response (truncated):
 
 ```json
 {
@@ -321,81 +254,75 @@ All supported currencies with codes, names, and symbols. Cached upstream for 24 
 }
 ```
 
----
+## 🗺️ Currencies covered
 
-## Environment variables
+Every currency the AllRatesToday API serves is available through these tools — call `list_currencies` for the authoritative live list. Commonly used codes include:
+
+🇺🇸 `USD` · 🇪🇺 `EUR` · 🇬🇧 `GBP` · 🇯🇵 `JPY` · 🇨🇦 `CAD` · 🇮🇳 `INR`
+
+The `source` and `target` fields of `get_exchange_rate` and `get_historical_rates` are validated as exactly three characters, so pass ISO 4217 codes, not currency names.
+
+## ⚙️ Environment variables
 
 | Variable | Default | Required | Purpose |
 |---|---|---|---|
-| `ALLRATES_API_KEY` | — | **yes** | Your API key. The server exits at startup if unset. |
-| `ALLRATES_BASE_URL` | `https://allratestoday.com/api` | no | Override for self-hosted or staging deployments. |
+| `ALLRATES_API_KEY` | — | **yes** | Your API key. The server exits with code 1 at startup if unset; sent as a `Bearer` token in the `Authorization` header. |
+| `ALLRATES_BASE_URL` | `https://allratestoday.com/api` | no | Override for a self-hosted or staging deployment. Trailing slashes are stripped. |
 
-You set these in your MCP client's config (in the `env` block) — not in your shell — because MCP servers are launched as subprocesses with isolated environments.
+Set these in your MCP client's config (in the `env` block), not in your shell — MCP servers are launched as subprocesses with isolated environments.
 
----
+## 🛡️ Error handling
 
-## Troubleshooting
+Tool failures come back as an MCP tool result with `isError: true`. The text is `AllRatesToday error (<status>): <message>`, where `<message>` is the `error` field from the API response body when present, and `HTTP <status>` otherwise.
+
+| HTTP status | Meaning |
+|---|---|
+| 400 | Bad request — usually an unknown or malformed currency code |
+| 401 | Invalid or missing API key |
+| 429 | Rate limit or quota exceeded |
+| 5xx | Server-side issue upstream |
+
+Two errors are raised locally, before any HTTP call:
+
+- No API key at request time → `API key is required. Get one at https://allratestoday.com/register, then set ALLRATES_API_KEY in your MCP config.`
+- Unrecognised tool name → `Unknown tool: <name>`
+
+Because these arrive as text, the assistant relays them to the user — a 429 surfaces as *"the API quota has been exceeded."*
+
+## 🛠️ Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| Client shows "MCP server failed to start" or red dot | `ALLRATES_API_KEY` not set or invalid | Verify the key in your client config; check it matches the dashboard |
-| Tools show but every call returns "Invalid API key" | Key is malformed (missing prefix, truncated, or revoked) | Copy a fresh key from the dashboard |
-| Tools return "API quota exceeded" | Plan request limit hit | Wait until next month or upgrade plan |
-| Historical tool returns "Bad request" | Invalid period or unknown currency code | Period must be `1d`/`7d`/`30d`/`1y`; codes must be 3 letters |
-| Server starts but tools never appear in client | Client didn't reload after config change | Fully quit (not just close) and reopen the client |
-| `npx` runs but hangs forever | The server is waiting for an MCP client to connect — this is normal when run from a shell | Don't run from a shell; let your MCP client launch it |
+| Client shows "MCP server failed to start" or a red dot | `ALLRATES_API_KEY` not set | Add the key to the `env` block in your client config |
+| Every call returns a 401 error | Key malformed, truncated, or revoked | Copy a fresh key from the dashboard |
+| Calls return a 429 error | Plan request limit hit | Wait for the quota to reset or upgrade the plan |
+| `get_historical_rates` returns a 400 error | Invalid period or unknown currency code | `period` must be `1d`/`7d`/`30d`/`1y`; codes must be exactly 3 letters |
+| Server starts but tools never appear | Client did not reload after the config change | Fully quit (not just close) and reopen the client |
+| `npx` runs but hangs forever | Normal — the server is waiting for an MCP client on stdio | Let your MCP client launch it |
 
-### Inspect server logs
-
-To see what the server is doing, run it manually with the API key set:
+To inspect what the server is doing, run it manually with the key set:
 
 ```bash
 ALLRATES_API_KEY=art_live_xxxxx npx -y @allratestoday/mcp-server
 ```
 
-You should see no output when healthy (stdio is reserved for the MCP protocol). Any errors print to stderr.
+No output means healthy — stdout is reserved for the MCP protocol; errors print to stderr.
 
----
+## 💡 Notes
 
-## Error reference
+**Do you store my conversation or query data?** No. Only your API key and the request parameters (`source`, `target`, `period`, `time`, `group`) are sent to allratestoday.com — never the model's conversation context.
 
-The server maps API errors to clear, actionable messages.
+**What happens to my API key?** It is only sent as a `Bearer` token in the `Authorization` header on requests to the AllRatesToday API. The server does not log it.
 
-| HTTP status | Meaning | Tool error message |
-|---|---|---|
-| 200 | Success | (rate returned) |
-| 400 | Bad request — usually unknown currency code | `Bad request — possibly an unknown currency code` |
-| 401 | Invalid or missing API key | `Invalid API key` |
-| 429 | Quota exceeded | `API quota exceeded` |
-| 5xx | Upstream server-side issue | `HTTP 5xx — <upstream message>` |
+**Why is the first call slow?** Cold start of `npx` (the first run downloads the package) plus an upstream cache miss.
 
-The LLM will surface these messages in its response, so a user prompt that hits a 429 results in the assistant saying *"the API quota has been exceeded — please try again next month or upgrade your plan."*
+**Can I run this without npm/Node?** Not currently — `engines` requires Node ≥ 18. If a standalone binary matters to you, open an issue.
 
----
+**Is there a self-hosted option?** Point `ALLRATES_BASE_URL` at your own instance.
 
-## FAQ
+**Does it work with other clients?** Any MCP-compatible host with stdio transport works; the four clients above are simply the ones with documented config paths here.
 
-**Do you store my conversation or query data?**
-No. Only your API key and the request parameters (source, target, period, time) are sent to the upstream API — never the LLM's conversation context, sheet contents, or anything else.
-
-**What happens to my API key?**
-It's only sent as a `Bearer` token in the `Authorization` header on requests to the upstream API. It's never logged or transmitted elsewhere.
-
-**Why is my historical request slow on first call?**
-Cold-start of `npx` (first run downloads the package) plus an initial upstream cache miss. Subsequent calls are fast (<200ms typically).
-
-**Can I run this without npm/Node?**
-Not currently — Node ≥18 is required. We've considered a standalone binary; if that matters to you, open an issue.
-
-**Is there a self-hosted option?**
-Yes, set `ALLRATES_BASE_URL` to point to your own instance.
-
-**Does this work with ChatGPT?**
-The Anthropic MCP standard works with any MCP-compatible client. ChatGPT Desktop has experimental MCP support; check OpenAI's docs for current status.
-
----
-
-## Development
+## 👩‍💻 Development
 
 ```bash
 git clone https://github.com/cahthuranag/realtime-exchange-rate-mcp.git
@@ -405,59 +332,47 @@ npm run build
 ALLRATES_API_KEY=art_live_xxxxx node dist/index.js
 ```
 
-The server runs on stdio and waits for an MCP client to connect. Hit Ctrl+C to exit.
+`npm run build` runs `tsc`; `npm run dev` watches and rebuilds; `npm start` runs the compiled server. CI ([`.github/workflows/ci.yml`](./.github/workflows/ci.yml)) runs `npm ci && npm run build` on Node 22 for every push to `main` and every pull request.
 
-To watch and rebuild on changes during development:
-
-```bash
-npm run dev
-```
-
-To test against a local instance:
+To test against a local AllRatesToday instance:
 
 ```bash
 ALLRATES_BASE_URL=http://localhost:8080/api ALLRATES_API_KEY=test_key node dist/index.js
 ```
 
-### Project structure
+Project structure:
 
-```
+```text
 src/
-├── index.ts      # MCP server, tool registration, request handlers
-└── client.ts     # HTTP client + error mapping
+├── index.ts      # MCP server, tool definitions, request handlers
+└── client.ts     # HTTP client for the AllRatesToday API + error mapping
 dist/             # Compiled JS (gitignored)
 server.json       # MCP registry manifest
-package.json      # npm metadata, dependencies, scripts
+smithery.yaml     # Smithery launch config
+.mcp.json         # Ready-to-copy client config
 ```
 
-### Contributing
+Issues and PRs are welcome. Before opening a PR: `npm run build` must succeed, exercise the change against a real API key, and update both the tool descriptions in `src/index.ts` and the API reference above if tool behaviour changes.
 
-Issues and PRs welcome at [github.com/cahthuranag/realtime-exchange-rate-mcp](https://github.com/cahthuranag/realtime-exchange-rate-mcp). Before opening a PR:
-
-1. `npm run build` should succeed with no errors
-2. Test against a real API key (set in `ALLRATES_API_KEY`)
-3. Update tool descriptions in `src/index.ts` if you change tool behavior
-4. Update this README's "Tools reference" section if you add or rename a tool
-
----
-
-## Changelog
+## 📝 Changelog
 
 See [GitHub Releases](https://github.com/cahthuranag/realtime-exchange-rate-mcp/releases) for the full list. Recent highlights:
 
-- **0.3.x** — API key required for all tools; fail-fast at startup with clear error
-- **0.2.x** — Removed news tool, required auth on `get_historical_rates`
+- **0.3.x** — API key required for all tools; fail-fast at startup with clear instructions
+- **0.2.x** — Removed the news tool; required auth on `get_historical_rates`
 - **0.1.x** — Initial release with 5 tools
 
----
+## 🔗 Links
 
-## Support
+- **Website:** [allratestoday.com](https://allratestoday.com)
+- **API docs:** [allratestoday.com/docs](https://allratestoday.com/docs)
+- **Free API key:** [allratestoday.com/register](https://allratestoday.com/register)
+- **Status:** [allratestoday.com/status](https://allratestoday.com/status)
+- **Support:** [allratestoday.com/contact](https://allratestoday.com/contact)
+- **npm:** [@allratestoday/mcp-server](https://www.npmjs.com/package/@allratestoday/mcp-server)
+- **MCP protocol:** [modelcontextprotocol.io](https://modelcontextprotocol.io)
+- **Bug reports:** [github.com/cahthuranag/realtime-exchange-rate-mcp/issues](https://github.com/cahthuranag/realtime-exchange-rate-mcp/issues)
 
-- **Bug reports**: [github.com/cahthuranag/realtime-exchange-rate-mcp/issues](https://github.com/cahthuranag/realtime-exchange-rate-mcp/issues)
-- **MCP questions**: [modelcontextprotocol.io](https://modelcontextprotocol.io) — protocol docs
-
----
-
-## License
+## 📜 License
 
 MIT — see [LICENSE](./LICENSE).
