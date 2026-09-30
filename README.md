@@ -1,6 +1,6 @@
 # Realtime Exchange Rate MCP Server — @allratestoday/mcp-server
 
-A Model Context Protocol server that lets Claude Code, Cursor, Claude Desktop, Windsurf, and any other MCP-compatible client fetch real-time currency rates, historical series, and multi-currency lookups from the [AllRatesToday](https://allratestoday.com) API. Rates come from institutional interbank market data.
+A Model Context Protocol server that lets Claude Code, Cursor, Claude Desktop, Windsurf, and any other MCP-compatible client fetch real-time currency rates, historical series, and multi-currency lookups from the [AllRatesToday](https://allratestoday.com) API. Rates are mid-market, with no retail spread.
 
 [![Powered by AllRatesToday](https://img.shields.io/badge/Powered%20by-AllRatesToday-orange.svg)](https://allratestoday.com)
 [![npm version](https://img.shields.io/npm/v/@allratestoday/mcp-server.svg)](https://www.npmjs.com/package/@allratestoday/mcp-server)
@@ -30,7 +30,7 @@ After installation, your assistant can answer questions like:
 - 🔒 **Nothing leaks** — only the request parameters and your API key ever reach allratestoday.com; never conversation context
 - 📦 **Two runtime dependencies** — `@modelcontextprotocol/sdk` and `zod`; Node.js ≥ 18
 
-Everything these tools return is a **mid-market rate** — the interbank midpoint, the right number for price display and conversion. It is not the official rate a tax authority or auditor may require; for published central-bank and tax-authority rates, see the [AllRatesToday docs](https://allratestoday.com/docs).
+Everything these tools return is a **mid-market rate** — the right number for price display and conversion. It is not the official rate a tax authority or auditor may require; for published central-bank and tax-authority rates, see the [AllRatesToday docs](https://allratestoday.com/docs).
 
 ## 🔑 Get your API key
 
