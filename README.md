@@ -372,6 +372,8 @@ See [GitHub Releases](https://github.com/cahthuranag/realtime-exchange-rate-mcp/
 - **npm:** [@allratestoday/mcp-server](https://www.npmjs.com/package/@allratestoday/mcp-server)
 - **MCP protocol:** [modelcontextprotocol.io](https://modelcontextprotocol.io)
 - **Bug reports:** [github.com/cahthuranag/realtime-exchange-rate-mcp/issues](https://github.com/cahthuranag/realtime-exchange-rate-mcp/issues)
+- **AI agents:** Claude Code plugin `/plugin marketplace add AllRates-Today/claude-code-plugin` · hosted MCP endpoint `https://allratestoday.com/api/mcp` (keyless)
+
 
 ## 📜 License
 
