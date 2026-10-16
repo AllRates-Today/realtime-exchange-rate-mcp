@@ -21,7 +21,7 @@ After installation, your assistant can answer questions like:
 - *"List every supported currency."*
 - *"What is the official ECB rate for USD today?"*
 
-This README documents the npm package [`@allratestoday/mcp-server`](https://www.npmjs.com/package/@allratestoday/mcp-server) (current version 0.7.4). Its source lives in [AllRates-Today/mcp-server](https://github.com/AllRates-Today/mcp-server).
+This README documents the npm package [`@allratestoday/mcp-server`](https://www.npmjs.com/package/@allratestoday/mcp-server) (current version 0.7.6). Its source lives in [AllRates-Today/mcp-server](https://github.com/AllRates-Today/mcp-server).
 
 ## 🚀 Features
 
@@ -49,10 +49,10 @@ The key is **optional**. Without `ALLRATES_API_KEY` the server starts in **keyle
 | `get_official_rates` | ✅ | Latest official table (or one pair); a dated table needs a paid-plan key |
 | `get_reference_rate` | ✅ | Latest Daily Reference Rate table (16:00 London); a past date needs a paid-plan key |
 | `request_trial_key` | ✅ | Self-issues a 100-call, 7-day key with no account and adopts it for the session |
-| `get_historical_rates` | 🔑 | Free key |
-| `get_rates_authenticated` | 🔑 | Free key |
+| `get_historical_rates` | 🔑 | Paid-plan key (free and trial keys get 403) |
+| `get_rates_authenticated` | 🔑 | Free key for latest rates; `time` (a past datetime) needs a paid plan |
 
-A free key unlocks real-time mid-market rates for 160+ currencies, history and multi-target lookups. The free tier is **300 requests, lifetime** — it never resets. Dated official and reference-rate tables need a paid plan ([pricing](https://allratestoday.com/pricing)).
+A free key unlocks real-time mid-market rates for 160+ currencies and multi-target lookups. The free tier is **300 requests, lifetime** — it never resets. All history and dated rates — mid-market history, point-in-time lookups, dated official and reference-rate tables — need a paid plan; free and trial keys get `403 historical_requires_paid_plan` ([pricing](https://allratestoday.com/pricing)).
 
 1. Register at [allratestoday.com/register](https://allratestoday.com/register)
 2. Verify your email
@@ -172,7 +172,7 @@ npx -y @allratestoday/mcp-server
 | `get_reference_rate` | Daily Reference Rate, one fixed mid-market table per business day (16:00 London) | — |
 | `request_trial_key` | Self-issue a 100-call, 7-day trial key, no account | — |
 
-Only `get_historical_rates` and `get_rates_authenticated` require `ALLRATES_API_KEY` (a free key is enough). Input schemas set `additionalProperties: false` — unknown fields are rejected. Full per-tool reference: [mcp-server README](https://github.com/AllRates-Today/mcp-server#-tools-reference).
+Only `get_historical_rates` and `get_rates_authenticated` require `ALLRATES_API_KEY`: a free key covers latest multi-target rates; `get_historical_rates` and `time` need a paid plan. Input schemas set `additionalProperties: false` — unknown fields are rejected. Full per-tool reference: [mcp-server README](https://github.com/AllRates-Today/mcp-server#-tools-reference).
 
 ### `get_exchange_rate`
 
@@ -190,7 +190,7 @@ Current mid-market rate between two currencies. Calls `GET /rate` with a key; ke
 Response with a key:
 
 ```json
-{ "rate": 0.888889, "source": "interbank" }
+{ "rate": 0.888889, "source": "mid-market" }
 ```
 
 Response keyless (`USD` → `GBP` is not in the ECB table, so the Bank of England answers; `derived: true` because it publishes the inverse):
@@ -208,7 +208,7 @@ Response keyless (`USD` → `GBP` is not in the ECB table, so the Bank of Englan
 
 ### `get_historical_rates`
 
-Time-series data points for a currency pair over a fixed period. Calls `GET /historical-rates`.
+Time-series data points for a currency pair over a fixed period. Calls `GET /historical-rates`. Needs an API key on a paid plan (free and trial keys get a 403).
 
 | Field | Type | Required | Description |
 |---|---|---|---|
@@ -253,7 +253,7 @@ Multiple targets in one call, with an optional historical timestamp or grouping 
 |---|---|---|---|
 | `source` | string (exactly 3 chars) | yes | Source currency code |
 | `target` | string | yes | One or more codes, comma-separated (`EUR,GBP,JPY`) |
-| `time` | string (ISO 8601 date-time) | no | Historical point in time |
+| `time` | string (ISO 8601 date-time) | no | Historical point in time (paid plans) |
 | `group` | string | no | One of `hour`, `day`, `week`, `month` |
 
 ```json
@@ -354,14 +354,15 @@ Tool failures come back as an MCP tool result with `isError: true`. The text is 
 |---|---|
 | 400 | The API's `error` field, else `Bad request — possibly an unknown currency code` |
 | 401 | `Invalid AllRatesToday API key` |
-| 403 | `HTTP 403 — <upstream message>`, e.g. `Historical central bank rates require a paid plan…` for a dated table on a free key |
+| 403 | `HTTP 403 — <upstream message>`, e.g. `Historical rates require a paid plan…` for `get_historical_rates` or `time` on a free or trial key, or `Historical central bank rates require a paid plan…` for a dated table |
 | 404 (keyless) | `No keyless official source covers X/Y. Real-time rates for 160+ currencies need an API key …` |
 | 429 | `AllRatesToday API quota exceeded` |
 | 5xx | `HTTP <status> — <upstream message>` |
 
 Errors raised locally, before any HTTP call:
 
-- Keyless call to `get_historical_rates` / `get_rates_authenticated` → `… needs an AllRatesToday API key. The free tier covers it — sign up at https://allratestoday.com/register …`
+- Keyless call to `get_rates_authenticated` (no `time`) → `… needs an AllRatesToday API key. The free tier covers it — sign up at https://allratestoday.com/register …`
+- Keyless call to `get_historical_rates`, or `get_rates_authenticated` with `time` → `… needs an AllRatesToday API key on a paid plan …`
 - Keyless call with a `date` to `get_official_rates` / `get_reference_rate` → `… needs an AllRatesToday API key on a paid plan …`
 - Unrecognised tool name → `MCP error -32602: Tool <name> not found`
 
@@ -374,7 +375,7 @@ Because these arrive as text, the assistant relays them to the user — a 429 su
 | Client shows "MCP server failed to start" or a red dot | Not a missing key (0.5.0+ starts without one) — usually `npx` cannot reach the registry, or Node is older than 18 | Run `npx -y @allratestoday/mcp-server` in a shell and read stderr |
 | Every call returns a 401 error | Key malformed, truncated, or revoked | Copy a fresh key from the dashboard |
 | Calls return a 429 error | Quota used up — the free tier is 300 requests lifetime and never resets | Upgrade at [allratestoday.com/pricing](https://allratestoday.com/pricing) |
-| Calls return a 403 error | `date` on `get_official_rates` / `get_reference_rate` with a free key | Omit `date` for the latest table, or upgrade |
+| Calls return a 403 error | `get_historical_rates`, `time`, or `date` on `get_official_rates` / `get_reference_rate` with a free or trial key | History is paid-only: omit `date`/`time` for the latest rates, or upgrade |
 | `get_historical_rates` returns a 400 error | Invalid period or unknown currency code | `period` must be `1d`/`7d`/`30d`/`1y`; codes must be exactly 3 letters |
 | Server starts but tools never appear | Client did not reload after the config change | Fully quit (not just close) and reopen the client |
 | `npx` runs but hangs forever | Normal — the server is waiting for an MCP client on stdio | Let your MCP client launch it |
@@ -440,6 +441,7 @@ Issues and PRs are welcome. Before opening a PR: `npm run build` must succeed, e
 
 Full changelog: [mcp-server README → Changelog](https://github.com/AllRates-Today/mcp-server#-changelog). Recent highlights:
 
+- **0.7.6** — Keyless `get_rates_authenticated` with `time` says a paid plan is needed; history documented as paid-only
 - **0.7.4** — Keyless `get_exchange_rate` falls back from the ECB table to the central bank issuing either currency (USD/GBP, GBP/JPY, USD/INR answer keyless), like the hosted endpoint; dated-table errors say a paid plan is needed
 - **0.7.0** — `get_reference_rate` (Daily Reference Rate) and `request_trial_key` (self-issued 100-call trial key)
 - **0.6.0** — Keyless `list_central_banks` and `get_official_rates` (121 central banks + 3 tax authorities)

@@ -7,7 +7,7 @@
 
 [English](./README.md) | 简体中文
 
-> **注意：** 本中文文档部分内容仍停留在 0.3.x 版本。当前版本（0.7.4）提供 8 个工具（托管端点 https://allratestoday.com/api/mcp 提供 11 个），**无需 API 密钥即可启动**（无密钥模式，不会因缺少密钥而退出），免费套餐为 300 次终身额度（不会重置）。最新说明请以 [英文 README](./README.md) 为准。
+> **注意：** 本中文文档部分内容仍停留在 0.3.x 版本。当前版本（0.7.6）提供 8 个工具（托管端点 https://allratestoday.com/api/mcp 提供 11 个），**无需 API 密钥即可启动**（无密钥模式，不会因缺少密钥而退出），免费套餐为 300 次终身额度（不会重置），仅含最新汇率；历史与按日期查询的数据（含 `get_historical_rates`）仅限付费套餐。最新说明请以 [英文 README](./README.md) 为准。
 
 > 让你的 AI 编程助手获得通往外汇市场的实时窗口。
 
@@ -227,12 +227,12 @@ npx -y @allratestoday/mcp-server
 **响应示例**
 
 ```json
-{ "rate": 0.888889, "source": "interbank" }
+{ "rate": 0.888889, "source": "mid-market" }
 ```
 
 ### `get_historical_rates`
 
-某币种对在固定周期内的历史时间序列数据。
+某币种对在固定周期内的历史时间序列数据。需要付费套餐的 API 密钥（免费密钥与试用密钥返回 403）。
 
 **输入参数**
 
@@ -282,7 +282,7 @@ npx -y @allratestoday/mcp-server
 |---|---|---|---|
 | `source` | string | 是 | 源货币代码 |
 | `target` | string | 是 | 一个或多个目标货币代码，逗号分隔（`EUR,GBP,JPY`） |
-| `time` | string（ISO 8601） | 否 | 历史时间点 |
+| `time` | string（ISO 8601） | 否 | 历史时间点（付费套餐） |
 | `group` | string | 否 | `hour` / `day` / `week` / `month` 之一 |
 
 **调用示例**
