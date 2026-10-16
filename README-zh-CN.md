@@ -7,6 +7,8 @@
 
 [English](./README.md) | 简体中文
 
+> **注意：** 本中文文档部分内容仍停留在 0.3.x 版本。当前版本（0.7.4）提供 8 个工具（托管端点 https://allratestoday.com/api/mcp 提供 11 个），**无需 API 密钥即可启动**（无密钥模式，不会因缺少密钥而退出），免费套餐为 300 次终身额度（不会重置）。最新说明请以 [英文 README](./README.md) 为准。
+
 > 让你的 AI 编程助手获得通往外汇市场的实时窗口。
 
 一个 Model Context Protocol（模型上下文协议）服务器，让 **Claude Code**、**Cursor**、**Claude Desktop**、**Windsurf** 以及任何其他 MCP 兼容客户端都能获取实时货币汇率、历史数据和多币种查询。
@@ -225,7 +227,7 @@ npx -y @allratestoday/mcp-server
 **响应示例**
 
 ```json
-{ "rate": 0.92145, "source": "wise" }
+{ "rate": 0.888889, "source": "interbank" }
 ```
 
 ### `get_historical_rates`
@@ -396,7 +398,7 @@ Anthropic 的 MCP 标准适用于任何兼容 MCP 的客户端。ChatGPT Desktop
 ## 本地开发
 
 ```bash
-git clone https://github.com/cahthuranag/realtime-exchange-rate-mcp.git
+git clone https://github.com/AllRates-Today/realtime-exchange-rate-mcp.git
 cd realtime-exchange-rate-mcp
 npm install
 npm run build
@@ -430,7 +432,7 @@ package.json      # npm 元数据、依赖、脚本
 
 ### 贡献指南
 
-欢迎在 [github.com/cahthuranag/realtime-exchange-rate-mcp](https://github.com/cahthuranag/realtime-exchange-rate-mcp) 提交 issue 与 PR。开 PR 前请确保：
+欢迎在 [github.com/AllRates-Today/realtime-exchange-rate-mcp](https://github.com/AllRates-Today/realtime-exchange-rate-mcp) 提交 issue 与 PR。开 PR 前请确保：
 
 1. `npm run build` 无错误
 2. 用真实 API 密钥（设置 `ALLRATES_API_KEY`）测试通过
@@ -441,7 +443,7 @@ package.json      # npm 元数据、依赖、脚本
 
 ## 更新日志
 
-完整版本历史见 [GitHub Releases](https://github.com/cahthuranag/realtime-exchange-rate-mcp/releases)。近期亮点：
+完整版本历史见 [GitHub Releases](https://github.com/AllRates-Today/realtime-exchange-rate-mcp/releases)。近期亮点：
 
 - **0.3.x** — 所有工具均需 API 密钥；启动时立即报错并给出清晰提示
 - **0.2.x** — 移除新闻工具，`get_historical_rates` 改为需要鉴权
@@ -451,7 +453,7 @@ package.json      # npm 元数据、依赖、脚本
 
 ## 支持与反馈
 
-- **Bug 反馈**：[github.com/cahthuranag/realtime-exchange-rate-mcp/issues](https://github.com/cahthuranag/realtime-exchange-rate-mcp/issues)
+- **Bug 反馈**：[github.com/AllRates-Today/realtime-exchange-rate-mcp/issues](https://github.com/AllRates-Today/realtime-exchange-rate-mcp/issues)
 - **MCP 协议问题**：[modelcontextprotocol.io](https://modelcontextprotocol.io) — 协议官方文档
 
 ---
