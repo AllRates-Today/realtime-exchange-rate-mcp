@@ -52,7 +52,7 @@ The key is **optional**. Without `ALLRATES_API_KEY` the server starts in **keyle
 | `get_historical_rates` | 🔑 | Paid-plan key (free and trial keys get 403) |
 | `get_rates_authenticated` | 🔑 | Free key for latest rates; `time` (a past datetime) needs a paid plan |
 
-A free key unlocks real-time mid-market rates for 160+ currencies and multi-target lookups. The free tier is **300 requests, lifetime** — it never resets. All history and dated rates — mid-market history, point-in-time lookups, dated official and reference-rate tables — need a paid plan; free and trial keys get `403 historical_requires_paid_plan` ([pricing](https://allratestoday.com/pricing)).
+A free key unlocks real-time mid-market rates for 160+ currencies and multi-target lookups. All history and dated rates — mid-market history, point-in-time lookups, dated official and reference-rate tables — need a paid plan; free and trial keys get `403 historical_requires_paid_plan` ([pricing](https://allratestoday.com/pricing)).
 
 1. Register at [allratestoday.com/register](https://allratestoday.com/register)
 2. Verify your email
@@ -374,7 +374,7 @@ Because these arrive as text, the assistant relays them to the user — a 429 su
 |---|---|---|
 | Client shows "MCP server failed to start" or a red dot | Not a missing key (0.5.0+ starts without one) — usually `npx` cannot reach the registry, or Node is older than 18 | Run `npx -y @allratestoday/mcp-server` in a shell and read stderr |
 | Every call returns a 401 error | Key malformed, truncated, or revoked | Copy a fresh key from the dashboard |
-| Calls return a 429 error | Quota used up — the free tier is 300 requests lifetime and never resets | Upgrade at [allratestoday.com/pricing](https://allratestoday.com/pricing) |
+| Calls return a 429 error | Quota used up — the free tier does not reset | Upgrade at [allratestoday.com/pricing](https://allratestoday.com/pricing) |
 | Calls return a 403 error | `get_historical_rates`, `time`, or `date` on `get_official_rates` / `get_reference_rate` with a free or trial key | History is paid-only: omit `date`/`time` for the latest rates, or upgrade |
 | `get_historical_rates` returns a 400 error | Invalid period or unknown currency code | `period` must be `1d`/`7d`/`30d`/`1y`; codes must be exactly 3 letters |
 | Server starts but tools never appear | Client did not reload after the config change | Fully quit (not just close) and reopen the client |
