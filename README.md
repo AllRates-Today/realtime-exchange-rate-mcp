@@ -456,6 +456,7 @@ Full changelog: [mcp-server README → Changelog](https://github.com/AllRates-To
 - **API docs:** [allratestoday.com/docs](https://allratestoday.com/docs)
 - **Free API key:** [allratestoday.com/register](https://allratestoday.com/register)
 - **Status:** [allratestoday.com/status](https://allratestoday.com/status)
+- **Postman:** [allratestoday.com/postman](https://allratestoday.com/postman/)
 - **Support:** [allratestoday.com/contact](https://allratestoday.com/contact)
 - **npm:** [@allratestoday/mcp-server](https://www.npmjs.com/package/@allratestoday/mcp-server)
 - **MCP protocol:** [modelcontextprotocol.io](https://modelcontextprotocol.io)
