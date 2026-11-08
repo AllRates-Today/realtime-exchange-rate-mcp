@@ -87,8 +87,7 @@ Each client reads MCP servers from a different config file. Pick yours below.
 The fastest path uses the built-in CLI:
 
 ```bash
-claude mcp add allratestoday -- npx -y @allratestoday/mcp-server
-claude mcp env allratestoday ALLRATES_API_KEY=art_live_xxxxx
+claude mcp add allratestoday -e ALLRATES_API_KEY=art_live_xxxxx -- npx -y @allratestoday/mcp-server
 ```
 
 Restart Claude Code, then ask: *"What's the current USD to EUR rate?"*
